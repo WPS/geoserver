@@ -1,10 +1,10 @@
 # WPS GeoServer Base Image
 
-Minimales GeoServer-Base-Image auf Alpine-Basis mit gebündeltem Jetty und Java 21.
+Minimal GeoServer base image on Alpine with bundled Jetty and Java 21.
 
-Publiziert auf: `ghcr.io/wps/geoserver`
+Published at: `ghcr.io/wps/geoserver`
 
-## Verwendung
+## Usage
 
 ```bash
 docker pull ghcr.io/wps/geoserver:3.0.0
@@ -13,48 +13,49 @@ docker run --rm -p 8080:8080 ghcr.io/wps/geoserver:3.0.0
 
 ## Tags
 
-| Tag | Bedeutung |
+| Tag | Meaning |
 |---|---|
-| `:{version}` | Aktuellster Build dieser GeoServer-Version, z.B. `:3.0.0` |
-| `:{version}-{YYYYMMDD}-{n}` | Datumsgenaue Version, z.B. `:3.0.0-20260702-1` |
+| `:{version}` | Latest build of that GeoServer version, e.g. `:3.0.0` |
+| `:{version}-{YYYYMMDD}-{n}` | Date-stamped build, e.g. `:3.0.0-20260702-1` |
+| `:latest` | Latest build of the most recent supported GeoServer version |
 
-Gepflegte GeoServer-Versionen: `2.28.3`, `3.0.0` (Matrix in [`.github/workflows/build.yml`](.github/workflows/build.yml)).
+Maintained GeoServer versions: `2.28.3`, `3.0.0` (matrix in [`.github/workflows/build.yml`](.github/workflows/build.yml)).
 
-## Lokales Bauen und Testen
+## Local build and test
 
 ```bash
-# Image bauen (Beispiel GeoServer 3.0.0)
+# Build image (example: GeoServer 3.0.0)
 docker build --build-arg GEOSERVER_VERSION=3.0.0 -t geoserver-local:3.0.0 .
 
-# Mit eigenem Base-Image (z.B. gehärtetes internes Alpine+Java-Image)
+# Build with a custom base image (e.g. a hardened internal Alpine+Java image)
 docker build \
   --build-arg GEOSERVER_VERSION=3.0.0 \
-  --build-arg BASE_IMAGE=ghcr.io/mein-org/my-alpine-java:21 \
+  --build-arg BASE_IMAGE=registry.example.com/hardened-java21:alpine \
   -t geoserver-local:3.0.0 .
 
-# Container starten (Admin-UI: http://localhost:8080/geoserver/web/)
+# Start container (Admin UI: http://localhost:8080/geoserver/web/)
 docker run --rm -p 8080:8080 geoserver-local:3.0.0
 
-# Integrationstests ausführen
+# Run integration tests
 ./integration-tests/mvnw -f integration-tests/pom.xml verify \
   -Dgeoserver.image=geoserver-local:3.0.0 \
   -Dgeoserver.version=3.0.0
 ```
 
-## Build-ARGs
+## Build ARGs
 
-| ARG | Default | Bedeutung |
+| ARG | Default | Description |
 |---|---|---|
-| `GEOSERVER_VERSION` | `2.28.3` | GeoServer-Version (aus `-bin.zip` Distribution) |
-| `BASE_IMAGE` | `eclipse-temurin:21-jre-alpine@sha256:…` | Runtime-Base-Image; muss Alpine/musl-kompatibel sein |
+| `GEOSERVER_VERSION` | `2.28.3` | GeoServer version (downloaded from the `-bin.zip` distribution) |
+| `BASE_IMAGE` | `eclipse-temurin:21-jre-alpine@sha256:…` | Runtime base image; must be Alpine/musl-compatible |
 
-Das `BASE_IMAGE`-ARG ermöglicht den Einsatz eines anderen Base-Images (z.B. ein gehärtetes
-org-internes Alpine+Java-Image), ohne das Dockerfile zu ändern.
+The `BASE_IMAGE` ARG allows substituting a different base image (e.g. a hardened
+org-internal Alpine+Java image) without modifying the Dockerfile.
 
-## Image erweitern (Downstream-Dockerfile)
+## Extending the image (downstream Dockerfile)
 
-Das Image läuft als `USER geoserver` (UID 1000). Um beim Image-Extend Pakete zu installieren oder
-Dateien zu schreiben, auf `USER root` wechseln und danach zurücksetzen:
+The image runs as `USER geoserver` (UID 1000). To install packages or write files
+when extending the image, switch to `USER root` and reset it afterwards:
 
 ```dockerfile
 FROM ghcr.io/wps/geoserver:3.0.0
@@ -68,6 +69,22 @@ COPY --chown=geoserver:geoserver workspaces/ /opt/geoserver_data/workspaces/
 USER geoserver
 ```
 
-Die GeoServer-Version steckt im Tag (`3.0.0`). Um auf eine neue Version zu wechseln, den Tag im
-`FROM` aktualisieren. Renovate erkennt `ghcr.io`-Tags ohne zusätzliche Konfiguration.
+The GeoServer version is embedded in the tag (`3.0.0`). To upgrade, update the tag in
+the `FROM` line. Renovate and Dependabot detect `ghcr.io` tags without additional configuration.
 
+## Security
+
+Each build is scanned with [Trivy](https://github.com/aquasecurity/trivy). Results are uploaded
+to the [GitHub Security tab](https://github.com/WPS/geoserver/security/code-scanning) as SARIF and
+attached as build artifacts (CycloneDX SBOM).
+
+GeoServer-specific JAR CVEs are version-bound rather than base-image-bound — switching the base
+image (Alpine vs. Ubuntu) does not resolve them; only GeoServer version upgrades do.
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## Adding a new GeoServer version to the CI matrix
+
+Add or update the `geoserver_version` matrix in `.github/workflows/build.yml`. On a major version
+change (e.g. 2.x → 3.x), review the `JAVA_OPTS` in the `Dockerfile` against the new GeoServer
+version (jakarta vs. javax module flags).
