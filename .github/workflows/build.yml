@@ -27,6 +27,7 @@ permissions:
   contents: read
   packages: write
   security-events: write
+  actions: read
 
 jobs:
   build:
@@ -67,15 +68,14 @@ jobs:
         run: |
           ./integration-tests/mvnw -f integration-tests/pom.xml verify \
             -Dgeoserver.image="${LOCAL_REF}" \
-            -Dgeoserver.version="${{ matrix.geoserver_version }}" \
-            -Dfailsafe.reportsDirectory="failsafe-reports-${{ matrix.geoserver_version }}"
+            -Dgeoserver.version="${{ matrix.geoserver_version }}"
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.geoserver_version }}
-          path: integration-tests/failsafe-reports-${{ matrix.geoserver_version }}/*.xml
+          path: integration-tests/target/failsafe-reports/*.xml
 
       - name: Scan image for vulnerabilities (SARIF → Security tab)
         if: always()
