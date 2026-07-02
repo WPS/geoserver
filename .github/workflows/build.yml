@@ -1,0 +1,75 @@
+name: Build and publish GeoServer image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - integration-tests/**
+      - .github/workflows/build.yml
+  workflow_dispatch:
+    inputs:
+      build_n:
+        description: "Build number suffix (default: 1; increment for same-day hotfix rebuilds)"
+        required: false
+        default: "1"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        geoserver_version: ["2.28.3", "3.0.0"]
+
+    env:
+      LOCAL_REF: geoserver-local:${{ matrix.geoserver_version }}
+      IMAGE: ghcr.io/wps/geoserver
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Build image
+        run: |
+          docker build \
+            --build-arg GEOSERVER_VERSION=${{ matrix.geoserver_version }} \
+            --label "org.opencontainers.image.created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --label "org.opencontainers.image.revision=${{ github.sha }}" \
+            -t "${LOCAL_REF}" \
+            .
+
+      - name: Run integration tests
+        run: |
+          ./integration-tests/mvnw -f integration-tests/pom.xml verify \
+            -Dgeoserver.image="${LOCAL_REF}" \
+            -Dgeoserver.version="${{ matrix.geoserver_version }}" \
+            -Dfailsafe.reportsDirectory="failsafe-reports-${{ matrix.geoserver_version }}"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.geoserver_version }}
+          path: integration-tests/failsafe-reports-${{ matrix.geoserver_version }}/*.xml
+
+      - name: Log in to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Push image
+        run: |
+          FULL_TAG="${{ matrix.geoserver_version }}-$(date +%Y%m%d)-${{ github.event.inputs.build_n || '1' }}"
+          docker tag "${LOCAL_REF}" "${IMAGE}:${{ matrix.geoserver_version }}"
+          docker tag "${LOCAL_REF}" "${IMAGE}:${FULL_TAG}"
+          docker push "${IMAGE}:${{ matrix.geoserver_version }}"
+          docker push "${IMAGE}:${FULL_TAG}"
