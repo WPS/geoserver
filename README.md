@@ -26,7 +26,7 @@ Gepflegte GeoServer-Versionen: `2.28.3`, `3.0.0` (Matrix in [`.github/workflows/
 # Image bauen (Beispiel GeoServer 3.0.0)
 docker build --build-arg GEOSERVER_VERSION=3.0.0 -t geoserver-local:3.0.0 .
 
-# Mit eigenem Base-Image (z.B. gehärtetes Alpine)
+# Mit eigenem Base-Image (z.B. gehärtetes internes Alpine+Java-Image)
 docker build \
   --build-arg GEOSERVER_VERSION=3.0.0 \
   --build-arg BASE_IMAGE=ghcr.io/mein-org/my-alpine-java:21 \
@@ -71,8 +71,3 @@ USER geoserver
 Die GeoServer-Version steckt im Tag (`3.0.0`). Um auf eine neue Version zu wechseln, den Tag im
 `FROM` aktualisieren. Renovate erkennt `ghcr.io`-Tags ohne zusätzliche Konfiguration.
 
-## GeoServer-Version aktualisieren
-
-Die `geoserver_version`-Matrix in `.github/workflows/build.yml` ergänzen oder anpassen. Bei einem Major-Versionswechsel
-(z.B. 2.x → 3.x) die `JAVA_OPTS` im `Dockerfile` gegen die neue GeoServer-Version prüfen
-(jakarta vs. javax Module-Flags).
