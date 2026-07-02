@@ -7,6 +7,11 @@ on:
       - Dockerfile
       - integration-tests/**
       - .github/workflows/build.yml
+  pull_request:
+    paths:
+      - Dockerfile
+      - integration-tests/**
+      - .github/workflows/build.yml
   workflow_dispatch:
     inputs:
       build_n:
@@ -14,9 +19,14 @@ on:
         required: false
         default: "1"
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   packages: write
+  security-events: write
 
 jobs:
   build:
@@ -24,7 +34,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        geoserver_version: ["2.28.3", "3.0.0"]
+        include:
+          - geoserver_version: "2.28.3"
+            latest: false
+          - geoserver_version: "3.0.0"
+            latest: true
 
     env:
       LOCAL_REF: geoserver-local:${{ matrix.geoserver_version }}
@@ -63,13 +77,55 @@ jobs:
           name: test-results-${{ matrix.geoserver_version }}
           path: integration-tests/failsafe-reports-${{ matrix.geoserver_version }}/*.xml
 
+      - name: Scan image for vulnerabilities (SARIF → Security tab)
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.LOCAL_REF }}
+          format: sarif
+          output: trivy-${{ matrix.geoserver_version }}.sarif
+          exit-code: "0"
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.geoserver_version }}.sarif
+          category: trivy-${{ matrix.geoserver_version }}
+
+      - name: Generate SBOM (CycloneDX)
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.LOCAL_REF }}
+          format: cyclonedx
+          output: sbom-${{ matrix.geoserver_version }}.cdx.json
+          exit-code: "0"
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-${{ matrix.geoserver_version }}
+          path: |
+            trivy-${{ matrix.geoserver_version }}.sarif
+            sbom-${{ matrix.geoserver_version }}.cdx.json
+
       - name: Log in to ghcr.io
+        if: github.event_name != 'pull_request'
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push image
+        if: github.event_name != 'pull_request'
+        env:
+          BUILD_N: ${{ github.event.inputs.build_n || '1' }}
         run: |
-          FULL_TAG="${{ matrix.geoserver_version }}-$(date +%Y%m%d)-${{ github.event.inputs.build_n || '1' }}"
+          FULL_TAG="${{ matrix.geoserver_version }}-$(date +%Y%m%d)-${BUILD_N}"
           docker tag "${LOCAL_REF}" "${IMAGE}:${{ matrix.geoserver_version }}"
           docker tag "${LOCAL_REF}" "${IMAGE}:${FULL_TAG}"
           docker push "${IMAGE}:${{ matrix.geoserver_version }}"
           docker push "${IMAGE}:${FULL_TAG}"
+          if [[ "${{ matrix.latest }}" == "true" ]]; then
+            docker tag "${LOCAL_REF}" "${IMAGE}:latest"
+            docker push "${IMAGE}:latest"
+          fi
