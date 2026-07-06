@@ -55,6 +55,14 @@ Both `BUILD_IMAGE` and `BASE_IMAGE` allow substituting hardened org-internal ima
 (e.g. a pinned Alpine for the build stage or a hardened Alpine+Java image for the
 runtime stage) without modifying the Dockerfile.
 
+## Runtime environment variables
+
+| Env | Default | Description |
+|---|---|---|
+| `TZ` | `Europe/Berlin` | Container timezone; `tzdata` is bundled, so any zone works (e.g. `-e TZ=UTC`) |
+| `JAVA_OPTS` | see Dockerfile | JVM flags passed to GeoServer; override to tune heap, GC, or add JVM options |
+| `GEOSERVER_DATA_DIR` | `/opt/geoserver_data` | GeoServer data directory; mount a volume here to persist configuration |
+
 ## Extending the image (downstream Dockerfile)
 
 The image runs as `USER geoserver` (UID 1000). To install packages or write files
