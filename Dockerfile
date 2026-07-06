@@ -1,6 +1,7 @@
 ARG BASE_IMAGE=eclipse-temurin:21-jre-alpine@sha256:3f08b13888f595cc49edabea7250ba69499ba25602b267da591720769400e08c
+ARG BUILD_IMAGE=alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
 
-FROM alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b AS fetch
+FROM ${BUILD_IMAGE} AS build
 
 ARG GEOSERVER_VERSION=2.28.3
 
@@ -33,7 +34,7 @@ ENV TZ=Europe/Berlin \
 
 RUN addgroup -S -g 1000 geoserver && adduser -S -u 1000 -G geoserver geoserver
 
-COPY --from=fetch --chown=geoserver:geoserver /opt/geoserver /opt/geoserver
+COPY --from=build --chown=geoserver:geoserver /opt/geoserver /opt/geoserver
 
 RUN mkdir -p /opt/geoserver_data \
  && cp -r /opt/geoserver/data_dir/. /opt/geoserver_data/ \

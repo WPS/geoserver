@@ -27,9 +27,10 @@ Maintained GeoServer versions: `2.28.3`, `3.0.0` (matrix in [`.github/workflows/
 # Build image (example: GeoServer 3.0.0)
 docker build --build-arg GEOSERVER_VERSION=3.0.0 -t geoserver-local:3.0.0 .
 
-# Build with a custom base image (e.g. a hardened internal Alpine+Java image)
+# Build with custom base images (e.g. hardened internal images)
 docker build \
   --build-arg GEOSERVER_VERSION=3.0.0 \
+  --build-arg BUILD_IMAGE=registry.example.com/hardened-alpine:3.24 \
   --build-arg BASE_IMAGE=registry.example.com/hardened-java21:alpine \
   -t geoserver-local:3.0.0 .
 
@@ -47,10 +48,12 @@ docker run --rm -p 8080:8080 geoserver-local:3.0.0
 | ARG | Default | Description |
 |---|---|---|
 | `GEOSERVER_VERSION` | `2.28.3` | GeoServer version (downloaded from the `-bin.zip` distribution) |
+| `BUILD_IMAGE` | `alpine:3.24@sha256:…` | Build-stage base (downloads & extracts the `-bin.zip`); must provide `curl` and `unzip` via `apk` |
 | `BASE_IMAGE` | `eclipse-temurin:21-jre-alpine@sha256:…` | Runtime base image; must be Alpine/musl-compatible |
 
-The `BASE_IMAGE` ARG allows substituting a different base image (e.g. a hardened
-org-internal Alpine+Java image) without modifying the Dockerfile.
+Both `BUILD_IMAGE` and `BASE_IMAGE` allow substituting hardened org-internal images
+(e.g. a pinned Alpine for the build stage or a hardened Alpine+Java image for the
+runtime stage) without modifying the Dockerfile.
 
 ## Extending the image (downstream Dockerfile)
 
