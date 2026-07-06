@@ -90,4 +90,4 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 Add or update the `geoserver_version` matrix in `.github/workflows/build.yml`. On a major version
 change (e.g. 2.x → 3.x), review the `JAVA_OPTS` in the `Dockerfile` against the new GeoServer
-version (jakarta vs. javax module flags).
+version.
