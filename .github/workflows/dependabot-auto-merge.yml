@@ -1,4 +1,4 @@
-name: Dependabot auto-merge
+name: Dependency auto-merge
 
 on: pull_request
 
@@ -9,7 +9,7 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-24.04
-    if: github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]'
+    if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'renovate/')
     steps:
       - name: Enable auto-merge for Dependabot/Renovate PR
         run: gh pr merge --auto --squash "$PR_URL"

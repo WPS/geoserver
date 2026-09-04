@@ -1,0 +1,22 @@
+name: Renovate
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run Renovate
+        run: npx --yes renovate "${{ github.repository }}"
+        env:
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_GH_TOKEN }}
+          RENOVATE_PLATFORM: github
+          LOG_LEVEL: info
