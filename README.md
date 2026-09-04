@@ -7,47 +7,47 @@ Published at: `ghcr.io/wps/geoserver`
 ## Usage
 
 ```bash
-docker pull ghcr.io/wps/geoserver:3.0.0
-docker run --rm -p 8080:8080 ghcr.io/wps/geoserver:3.0.0
+docker pull ghcr.io/wps/geoserver:3.0.1
+docker run --rm -p 8080:8080 ghcr.io/wps/geoserver:3.0.1
 ```
 
 ## Tags
 
 | Tag | Meaning |
 |---|---|
-| `:{version}` | Latest build of that GeoServer version, e.g. `:3.0.0` |
-| `:{version}-{YYYYMMDD}-{n}` | Date-stamped build, e.g. `:3.0.0-20260702-1` |
+| `:{version}` | Latest build of that GeoServer version, e.g. `:3.0.1` |
+| `:{version}-{YYYYMMDD}-{n}` | Date-stamped build, e.g. `:3.0.1-20260702-1` |
 | `:latest` | Latest build of the most recent supported GeoServer version |
 
-Maintained GeoServer versions: `2.28.3`, `3.0.0` (matrix in [`.github/workflows/build.yml`](.github/workflows/build.yml)).
+Maintained GeoServer versions: `2.28.5`, `3.0.1` (matrix in [`.github/workflows/build.yml`](.github/workflows/build.yml)).
 
 ## Local build and test
 
 ```bash
-# Build image (example: GeoServer 3.0.0)
-docker build --build-arg GEOSERVER_VERSION=3.0.0 -t geoserver-local:3.0.0 .
+# Build image (example: GeoServer 3.0.1)
+docker build --build-arg GEOSERVER_VERSION=3.0.1 -t geoserver-local:3.0.1 .
 
 # Build with custom base images (e.g. hardened internal images)
 docker build \
-  --build-arg GEOSERVER_VERSION=3.0.0 \
+  --build-arg GEOSERVER_VERSION=3.0.1 \
   --build-arg BUILD_IMAGE=registry.example.com/hardened-alpine:3.24 \
   --build-arg BASE_IMAGE=registry.example.com/hardened-java21:alpine \
-  -t geoserver-local:3.0.0 .
+  -t geoserver-local:3.0.1 .
 
 # Start container (Admin UI: http://localhost:8080/geoserver/web/)
-docker run --rm -p 8080:8080 geoserver-local:3.0.0
+docker run --rm -p 8080:8080 geoserver-local:3.0.1
 
 # Run integration tests
 ./integration-tests/mvnw -f integration-tests/pom.xml verify \
-  -Dgeoserver.image=geoserver-local:3.0.0 \
-  -Dgeoserver.version=3.0.0
+  -Dgeoserver.image=geoserver-local:3.0.1 \
+  -Dgeoserver.version=3.0.1
 ```
 
 ## Build ARGs
 
 | ARG | Default | Description |
 |---|---|---|
-| `GEOSERVER_VERSION` | `2.28.3` | GeoServer version (downloaded from the `-bin.zip` distribution) |
+| `GEOSERVER_VERSION` | *required, no default* | GeoServer version (downloaded from the `-bin.zip` distribution) |
 | `BUILD_IMAGE` | `alpine:3.24@sha256:…` | Build-stage base (downloads & extracts the `-bin.zip`); must provide `curl` and `unzip` via `apk` |
 | `BASE_IMAGE` | `eclipse-temurin:21-jre-alpine@sha256:…` | Runtime base image; must be Alpine/musl-compatible |
 
@@ -69,7 +69,7 @@ The image runs as `USER geoserver` (UID 1000). To install packages or write file
 when extending the image, switch to `USER root` and reset it afterwards:
 
 ```dockerfile
-FROM ghcr.io/wps/geoserver:3.0.0
+FROM ghcr.io/wps/geoserver:3.0.1
 
 USER root
 RUN apk add --no-cache wget \
@@ -80,7 +80,7 @@ COPY --chown=geoserver:geoserver workspaces/ /opt/geoserver_data/workspaces/
 USER geoserver
 ```
 
-The GeoServer version is embedded in the tag (`3.0.0`). To upgrade, update the tag in
+The GeoServer version is embedded in the tag (`3.0.1`). To upgrade, update the tag in
 the `FROM` line. Renovate and Dependabot detect `ghcr.io` tags without additional configuration.
 
 ## Security

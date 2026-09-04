@@ -3,7 +3,7 @@ ARG BUILD_IMAGE=alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db869
 
 FROM ${BUILD_IMAGE} AS build
 
-ARG GEOSERVER_VERSION=2.28.3
+ARG GEOSERVER_VERSION
 
 RUN apk add --no-cache curl unzip \
  && curl -fSL -o /tmp/gs.zip \
