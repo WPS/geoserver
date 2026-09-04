@@ -1,10 +1,7 @@
 version: 2
 updates:
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "daily"
-
+  # docker (Dockerfile base images) is handled by Renovate (renovate.json),
+  # since it reliably tracks digest updates for floating tags — see renovate.json
   - package-ecosystem: "maven"
     directory: "/integration-tests"
     schedule:
