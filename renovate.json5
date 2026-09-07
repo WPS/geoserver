@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+
+  // major updates should be reviewed, so major ones are labeled to prevent auto-merge
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["major-update"],
+    },
+  ],
+
+  // GeoServer version isn't a package dependency, just a string in build.yml's
+  // matrix. Tracked via geoserver/geoserver GitHub releases; matched by its
+  // own 2./3. prefix so the parallel 2.x/3.x lines update independently
+  // instead of collapsing into one.
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": ["geoserver_version:\\s*\"(?<currentValue>2\\.[^\"]+)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "geoserver/geoserver",
+      "extractVersionTemplate": "^(?<version>2\\..*)$",
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/build\\.yml$/"],
+      "matchStrings": ["geoserver_version:\\s*\"(?<currentValue>3\\.[^\"]+)\""],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "geoserver/geoserver",
+      "extractVersionTemplate": "^(?<version>3\\..*)$",
+    },
+  ],
+}
