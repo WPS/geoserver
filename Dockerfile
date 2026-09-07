@@ -6,8 +6,17 @@ FROM ${BUILD_IMAGE} AS build
 ARG GEOSERVER_VERSION
 
 RUN apk add --no-cache curl unzip \
- && curl -fSL -o /tmp/gs.zip \
-      "https://sourceforge.net/projects/geoserver/files/GeoServer/${GEOSERVER_VERSION}/geoserver-${GEOSERVER_VERSION}-bin.zip/download" \
+ && DOWNLOAD_URL="https://sourceforge.net/projects/geoserver/files/GeoServer/${GEOSERVER_VERSION}/geoserver-${GEOSERVER_VERSION}-bin.zip/download" \
+ && curl -fSL -o /tmp/gs.zip "${DOWNLOAD_URL}" \
+ && EXPECTED_MD5=$(curl -fsSL "https://sourceforge.net/projects/geoserver/rss?path=/GeoServer/${GEOSERVER_VERSION}" \
+      | grep -F "url=\"${DOWNLOAD_URL}\"" \
+      | grep -oE 'algo="md5">[0-9a-f]{32}' \
+      | grep -oE '[0-9a-f]{32}') \
+ && ACTUAL_MD5=$(md5sum /tmp/gs.zip | cut -d' ' -f1) \
+ && if [ -z "${EXPECTED_MD5}" ] || [ "${EXPECTED_MD5}" != "${ACTUAL_MD5}" ]; then \
+      echo "GeoServer checksum verification failed: expected=${EXPECTED_MD5:-<none>} actual=${ACTUAL_MD5}"; \
+      exit 1; \
+    fi \
  && unzip -q /tmp/gs.zip -d /opt/geoserver \
  && rm /tmp/gs.zip
 
