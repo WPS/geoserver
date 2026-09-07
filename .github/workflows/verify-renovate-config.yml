@@ -1,0 +1,21 @@
+name: Verify Renovate config
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - renovate.json5
+      - .github/workflows/build.yml
+  pull_request:
+    paths:
+      - renovate.json5
+      - .github/workflows/build.yml
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate renovate.json5 syntax
+        run: npx --yes --package renovate -c "renovate-config-validator renovate.json5"
