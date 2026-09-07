@@ -9,7 +9,7 @@ permissions:
 jobs:
   auto-merge:
     runs-on: ubuntu-24.04
-    if: github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'renovate/')
+    if: (github.actor == 'dependabot[bot]' || startsWith(github.head_ref, 'renovate/')) && !contains(github.event.pull_request.labels.*.name, 'major-update')
     steps:
       - name: Enable auto-merge for Dependabot/Renovate PR
         run: gh pr merge --auto --squash "$PR_URL"
