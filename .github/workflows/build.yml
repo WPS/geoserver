@@ -31,6 +31,7 @@ permissions:
 
 jobs:
   build:
+    name: build (${{ matrix.track }})
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -38,8 +39,10 @@ jobs:
         include:
           - geoserver_version: "2.28.5"
             latest: false
+            track: "2.x"
           - geoserver_version: "3.0.1"
             latest: true
+            track: "3.x"
 
     env:
       LOCAL_REF: geoserver-local:${{ matrix.geoserver_version }}
