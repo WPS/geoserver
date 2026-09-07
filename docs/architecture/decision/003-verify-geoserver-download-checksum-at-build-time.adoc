@@ -1,0 +1,48 @@
+== 003-verify-geoserver-download-checksum-at-build-time
+
+== Status
+
+✅ Akzeptiert (07.09.2026)
+
+== Kontext
+
+Der `GEOSERVER_VERSION`-Download von SourceForge wurde bisher ohne Integritätsprüfung per `curl`
+heruntergeladen. SourceForge liefert über einen RSS/Files-Feed einen MD5-Hash pro Datei, kein
+SHA256.
+
+*Anforderungen*:
+
+[cols="1,2",options="header"]
+|===
+| Kriterium | Details
+
+| Integritätsschutz | Download muss gegen Transit-Korruption/Mirror-Manipulation geprüft werden.
+| Automatisierung | Renovate-Versions-Bumps dürfen keinen manuellen Zusatzschritt brauchen.
+| Fail-closed | Fehlende oder falsche Checksum muss den Build hart abbrechen.
+|===
+
+*Alternativen*:
+
+1. *Keine Verifikation* — kein Aufwand, aber kein Integritätsschutz.
+2. *Checksum fest im Repo pinnen* — schützt zusätzlich gegen eine spätere Kompromittierung von
+   SourceForge nach dem Pinning-Zeitpunkt, aber jeder Renovate-Versions-Bump würde ohne manuell
+   nachgezogene Checksum in CI fehlschlagen.
+3. *PGP-Signatur gegen einen von GeoServer veröffentlichten Public Key* — würde auch vor einer
+   Kompromittierung zum Pinning-Zeitpunkt selbst schützen. GeoServer bietet das aber nicht an;
+   SourceForge listet keine `.asc`- oder `SHA256SUMS`-Dateien im Release-Verzeichnis.
+
+== Entscheidung
+
+Wir verifizieren den Download zur Build-Zeit gegen den MD5-Hash aus SourceForges RSS-Feed, weil:
+
+1. Renovate-Versions-Bumps bleiben vollautomatisch — keine manuelle Checksum-Pflege nötig.
+2. Schützt gegen Transit-Korruption und Mirror-Manipulation, dem realistischeren Angriffsvektor
+   gegenüber einer kompromittierten Quelle.
+3. Fehlt die Checksum oder stimmt sie nicht, bricht der Build hart ab statt still weiterzulaufen.
+
+== Risiken
+
+1. *Kein Schutz bei kompromittiertem SourceForge* — Download und Checksum stammen aus derselben
+   Quelle.
+2. *Nur MD5 verfügbar* — SourceForge liefert kein SHA256 über diesen Feed; kryptographisch
+   schwächer, aber für den gewählten Schutzzweck ausreichend.

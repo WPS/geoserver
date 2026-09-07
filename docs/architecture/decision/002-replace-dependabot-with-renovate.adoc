@@ -1,0 +1,49 @@
+== 002-replace-dependabot-with-renovate
+
+== Status
+
+✅ Akzeptiert (07.09.2026)
+
+== Kontext
+
+Wir benötigen zuverlässiges Update-Tracking für zwei Fälle: die GeoServer-Version (kein
+Paket-Manager-Dependency, braucht einen Custom Regex Manager) und Docker-Base-Images mit floating
+Tags wie `eclipse-temurin:21-jre-alpine`, deren Digest sich ohne Tag-Wechsel ändert.
+
+*Anforderungen*:
+
+[cols="1,2",options="header"]
+|===
+| Kriterium | Details
+
+| Digest-Tracking | Base-Image-Digests müssen auch bei gleichbleibendem Tag aktualisiert werden.
+| GeoServer-Version-Tracking | Neue Releases (2.x- und 3.x-Linie parallel) müssen automatisch als
+PR vorgeschlagen werden, ohne die Linien zu vermischen.
+|===
+
+*Alternativen*:
+
+1. *Bei Dependabot bleiben* — kein Migrationsaufwand, Digest- und GeoServer-Version-Tracking
+   bleiben aber strukturell unmöglich.
+2. *Self-hosted Renovate* — auf die org-weite Einrichtung der GitHub-App kann verzichtet werden,
+   aber PRs mit dem Standard-`GITHUB_TOKEN` lösen laut GitHub keine Folge-Workflows aus
+   (Anti-Rekursions-Schutz) — die CI-Checks würden auf solchen PRs nie laufen, sie blieben
+   ungetestet mergebar.
+
+== Entscheidung
+
+Wir ersetzen Dependabot durch die offizielle Renovate-GitHub-App (für dieses Repo freigeschaltet),
+weil:
+
+1. Renovate aktualisiert Docker-Digests bei jedem Lauf neu, unabhängig vom Tag — dokumentiertes
+   Verhalten, behebt das Ausgangsproblem direkt.
+2. Ein Custom Regex Manager (`renovate.json5`) trackt die GeoServer-Version gegen die echten
+   GitHub-Releases von `geoserver/geoserver`, mit je einem unabhängigen Eintrag für die 2.x- und
+   3.x-Linie.
+3. Dependabot Security Updates (CVE-getriggerte PRs) laufen unabhängig von `dependabot.yml` weiter
+   und sind von dieser Entscheidung nicht betroffen.
+
+== Risiken
+
+1. *Renovate-Verhalten org-weit verwaltet* — Silent Mode, Dashboard-Approval, PR-Rate-Limits liegen
+   im Mend-Portal, nicht im Repo.

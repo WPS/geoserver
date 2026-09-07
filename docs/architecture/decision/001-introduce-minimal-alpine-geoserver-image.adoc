@@ -1,0 +1,47 @@
+== 001-introduce-minimal-alpine-geoserver-image
+
+== Status
+
+✅ Akzeptiert (30.06.2026)
+
+== Kontext
+
+Das bisher genutzte Image `docker.osgeo.org/geoserver` basiert auf Ubuntu mit vollständigem
+Tomcat-Stack und GDAL — Hauptquelle der gemeldeten CVEs, ca. 1,2 GB groß. GDAL und Tomcat werden
+nicht benötigt (nur GeoPackage als Datenquelle).
+
+*Anforderungen*:
+
+[cols="1,2",options="header"]
+|===
+| Kriterium | Details
+
+| CVE-Reduktion | Ubuntu-/Tomcat-/GDAL-CVEs beseitigen; GeoServer-JAR-CVEs bleiben versionsgebunden.
+| Image-Größe | Signifikante Reduktion gegenüber dem Ubuntu-basierten Image.
+| Verfügbarkeit | Öffentlich pullbar ohne Authentifizierung, org-weit nutzbar.
+|===
+
+*Alternativen*:
+
+1. *osgeo-Image weiterverwenden* — kein Aufwand, aber CVEs und Image-Größe bleiben hoch.
+2. *Minimales Image direkt im nutzenden Anwendungs-Repo bauen* — kein Koordinationsaufwand, aber
+   nicht org-weit wiederverwendbar, kein eigener Release-/Scan-Zyklus.
+3. *WAR-Deployment auf eigenem Tomcat* — keine CVE-Verbesserung, Tomcat-Stack bleibt bestehen.
+
+== Entscheidung
+
+Wir bauen ein minimales Alpine-Image in diesem dedizierten Repo und publizieren es öffentlich auf
+`ghcr.io/wps/geoserver`, weil:
+
+1. Ubuntu, Tomcat und GDAL sind die Hauptquellen der CVEs — keines wird genutzt, ein Alpine-Image
+   ohne sie reduziert CVEs und Größe deutlich.
+2. Ein eigenes Repo ermöglicht org-weite Nutzung und einen eigenständigen Release-/Scan-Zyklus,
+   losgelöst von anderen Projekten.
+3. Die `-bin.zip`-Distribution bringt den zur GeoServer-Version passenden Jetty-Stack mit, kein
+   eigenes javax/jakarta-Mapping nötig.
+
+== Risiken
+
+1. *Selbst gepflegte Releases* — GeoServer-Version, Java-Version und Alpine-Pakete müssen aktiv
+   nachgezogen werden.
+2. *musl auf arm64* — sqlite-jdbc musl-Support weniger dokumentiert, Pure-Java-Fallback aktiv.
