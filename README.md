@@ -96,6 +96,6 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Adding a new GeoServer version to the CI matrix
 
-Add or update the `geoserver_version` matrix in `.github/workflows/build.yml`. On a major version
-change (e.g. 2.x → 3.x), review the `JAVA_OPTS` in the `Dockerfile` against the new GeoServer
-version.
+Routine patch/minor bumps within the existing 2.x and 3.x lines are picked up automatically by
+Renovate (see `renovate.json5`), which opens a PR updating `geoserver_version` in
+`.github/workflows/build.yml`.
