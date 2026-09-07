@@ -1,0 +1,10 @@
+{
+  "2.x": {
+    "geoserver_version": "2.28.5",
+    "latest": false
+  },
+  "3.x": {
+    "geoserver_version": "3.0.1",
+    "latest": true
+  }
+}

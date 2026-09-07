@@ -98,4 +98,4 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 Routine patch/minor bumps within the existing 2.x and 3.x lines are picked up automatically by
 Renovate (see `renovate.json5`), which opens a PR updating `geoserver_version` in
-`.github/workflows/build.yml`.
+`versions.json`.

@@ -5,12 +5,14 @@ on:
     branches: [main]
     paths:
       - renovate.json5
-      - .github/workflows/build.yml
+      - versions.json
+      - renovate-tests/**
       - .github/workflows/verify-renovate-config.yml
   pull_request:
     paths:
       - renovate.json5
-      - .github/workflows/build.yml
+      - versions.json
+      - renovate-tests/**
       - .github/workflows/verify-renovate-config.yml
 
 jobs:
@@ -21,3 +23,13 @@ jobs:
 
       - name: Validate renovate.json5 syntax
         run: npx --yes --package renovate -c "renovate-config-validator renovate.json5"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Verify custom managers match versions.json and official geoserver releases
+        run: ./renovate-tests/mvnw -f renovate-tests/pom.xml test
