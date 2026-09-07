@@ -6,10 +6,12 @@ on:
     paths:
       - renovate.json5
       - .github/workflows/build.yml
+      - .github/workflows/verify-renovate-config.yml
   pull_request:
     paths:
       - renovate.json5
       - .github/workflows/build.yml
+      - .github/workflows/verify-renovate-config.yml
 
 jobs:
   verify:
