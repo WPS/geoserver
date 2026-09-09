@@ -9,11 +9,6 @@ on:
       - versions.json
       - .github/workflows/build.yml
   pull_request:
-    paths:
-      - Dockerfile
-      - integration-tests/**
-      - versions.json
-      - .github/workflows/build.yml
   workflow_dispatch:
     inputs:
       build_n:
@@ -88,7 +83,7 @@ jobs:
           path: integration-tests/target/failsafe-reports/*.xml
 
       - name: Scan image for vulnerabilities (SARIF → Security tab)
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.LOCAL_REF }}
@@ -105,7 +100,7 @@ jobs:
           category: trivy-${{ env.GEOSERVER_VERSION }}
 
       - name: Generate SBOM (CycloneDX)
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.LOCAL_REF }}
@@ -114,7 +109,7 @@ jobs:
           exit-code: "0"
 
       - name: Upload security artifacts
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: security-${{ env.GEOSERVER_VERSION }}
