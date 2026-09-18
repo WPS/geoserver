@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=eclipse-temurin:21-jre-alpine@sha256:974b08960c5d96694c780e65b2d5705268ab1e1ca1a0dd0caf4ba6c3fe34d699
+ARG BASE_IMAGE=eclipse-temurin:21-jre-alpine@sha256:3a48cd0298a7073cbabfd3056942f72fb260ba9b892524aff8da2962f0c9d983
 ARG BUILD_IMAGE=alpine:3.24@sha256:e7c4abb69531cb09e2a2bbb56fad3367ab694865c49df898c1c683185cc4376c
 
 FROM ${BUILD_IMAGE} AS build
