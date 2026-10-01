@@ -12,18 +12,8 @@
   ],
 
   // GeoServer version isn't a package dependency, just a string in
-  // versions.json. Tracked via geoserver/geoserver GitHub releases; matched
-  // by its own 2./3. prefix so the parallel 2.x/3.x lines update
-  // independently instead of collapsing into one.
+  // versions.json. Tracked via geoserver/geoserver GitHub releases
   "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": ["/^versions\\.json$/"],
-      "matchStrings": ["\"geoserver_version\":\\s*\"(?<currentValue>2\\.[^\"]+)\""],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "geoserver/geoserver",
-      "extractVersionTemplate": "^(?<version>2\\..*)$",
-    },
     {
       "customType": "regex",
       "managerFilePatterns": ["/^versions\\.json$/"],

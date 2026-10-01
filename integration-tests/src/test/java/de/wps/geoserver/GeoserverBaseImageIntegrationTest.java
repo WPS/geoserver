@@ -54,7 +54,7 @@ class GeoserverBaseImageIntegrationTest {
         // arrange
         String expectedVersion = System.getProperty("geoserver.version");
         assertThat(expectedVersion)
-                .as("System-Property geoserver.version muss gesetzt sein (z.B. -Dgeoserver.version=2.28.3)")
+                .as("System-Property geoserver.version muss gesetzt sein (z.B. -Dgeoserver.version=3.0.1)")
                 .isNotNull().isNotEmpty();
 
         // act

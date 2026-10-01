@@ -19,7 +19,7 @@ docker run --rm -p 8080:8080 ghcr.io/wps/geoserver:3.0.1
 | `:{version}-{YYYYMMDD}-{n}` | Date-stamped build, e.g. `:3.0.1-20260702-1` |
 | `:latest` | Latest build of the most recent supported GeoServer version |
 
-Maintained GeoServer versions: `2.28.5`, `3.0.1` (matrix in [`.github/workflows/build.yml`](.github/workflows/build.yml)).
+Maintained GeoServer version: `3.0.1` (matrix in [`.github/workflows/build.yml`](.github/workflows/build.yml)).
 
 ## Local build and test
 
@@ -96,6 +96,6 @@ To report a vulnerability, see [SECURITY.md](SECURITY.md).
 
 ## Adding a new GeoServer version to the CI matrix
 
-Routine patch/minor bumps within the existing 2.x and 3.x lines are picked up automatically by
+Routine patch/minor bumps within the 3.x line are picked up automatically by
 Renovate (see `renovate.json5`), which opens a PR updating `geoserver_version` in
 `versions.json`.
