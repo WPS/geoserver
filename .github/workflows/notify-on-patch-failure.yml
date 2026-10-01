@@ -2,6 +2,10 @@ name: Patch failure alert
 
 on:
   workflow_run:
+    workflows:
+      - "Build and publish GeoServer image"
+      - "Verify Renovate config"
+      - "Dependency auto-merge"
     types: [completed]
     branches: ["renovate/**"]
 
