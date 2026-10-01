@@ -29,7 +29,7 @@ permissions:
 jobs:
   build:
     name: build (${{ matrix.track }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -56,7 +56,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v6
         with:
-          java-version: "21"
+          java-version: "25.0.4+101.0.LTS"
           distribution: temurin
           cache: maven
 
@@ -94,7 +94,7 @@ jobs:
       - name: Upload SARIF to GitHub Security
         if: always() && github.event_name != 'pull_request'
         continue-on-error: true
-        uses: github/codeql-action/upload-sarif@v4.37.9
+        uses: github/codeql-action/upload-sarif@v4.38.2
         with:
           sarif_file: trivy-${{ env.GEOSERVER_VERSION }}.sarif
           category: trivy-${{ env.GEOSERVER_VERSION }}
