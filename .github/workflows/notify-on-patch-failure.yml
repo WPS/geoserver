@@ -49,13 +49,12 @@ jobs:
       - name: Send Teams alert
         if: env.SKIP_ALERT != 'true'
         env:
-          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
           WEBHOOK_URL: ${{ secrets.TEAMS_ALERT_CHANNEL_WEBHOOK_URL }}
         run: |
           jq -n \
-            --arg title "🔴 CI fehlgeschlagen: $WORKFLOW_NAME ($HEAD_BRANCH)" \
+            --arg title "🔴 Patch fehlgeschlagen: $HEAD_BRANCH" \
             --arg url "$RUN_URL" \
             '{
               type: "message",
@@ -66,7 +65,7 @@ jobs:
                   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                   version: "1.4",
                   body: [{type: "TextBlock", text: $title, weight: "Bolder", size: "Medium", wrap: true, color: "Attention"}],
-                  actions: [{type: "Action.OpenUrl", title: "Run öffnen", url: $url}]
+                  actions: [{type: "Action.OpenUrl", title: "PR öffnen", url: $url}]
                 }
               }]
             }' > card.json
