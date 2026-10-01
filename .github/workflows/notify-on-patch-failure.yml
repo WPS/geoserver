@@ -1,0 +1,76 @@
+name: Patch failure alert
+
+on:
+  workflow_run:
+    types: [completed]
+    branches: ["renovate/**"]
+
+permissions:
+  actions: read
+
+concurrency:
+  group: ci-alert-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  alert:
+    name: alert
+    runs-on: ubuntu-24.04
+    if: >
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.name != github.workflow &&
+      (github.event.workflow_run.conclusion == 'failure' ||
+       github.event.workflow_run.conclusion == 'timed_out')
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+
+    steps:
+      - name: Check previous run on this branch
+        env:
+          WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          RESPONSE=$(gh api --method GET \
+            "repos/{owner}/{repo}/actions/workflows/$WORKFLOW_ID/runs" \
+            -f "branch=$HEAD_BRANCH" \
+            -f "status=completed" \
+            -f "per_page=5")
+
+          PREVIOUS_CONCLUSION=$(echo "$RESPONSE" | jq -r --argjson current_run_id "$RUN_ID" \
+            '[.workflow_runs[] | select(.id != $current_run_id)] | sort_by(.created_at) | reverse | .[0].conclusion // "none"')
+
+          if [ "$PREVIOUS_CONCLUSION" = "failure" ] || [ "$PREVIOUS_CONCLUSION" = "timed_out" ]; then
+            echo "Vorheriger Run auf $HEAD_BRANCH war bereits $PREVIOUS_CONCLUSION - keine erneute Meldung."
+            echo "SKIP_ALERT=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Send Teams alert
+        if: env.SKIP_ALERT != 'true'
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          WEBHOOK_URL: ${{ secrets.TEAMS_ALERT_CHANNEL_WEBHOOK_URL }}
+        run: |
+          jq -n \
+            --arg title "🔴 Patch fehlgeschlagen: $HEAD_BRANCH" \
+            --arg url "$RUN_URL" \
+            '{
+              type: "message",
+              attachments: [{
+                contentType: "application/vnd.microsoft.card.adaptive",
+                content: {
+                  type: "AdaptiveCard",
+                  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  version: "1.4",
+                  body: [{type: "TextBlock", text: $title, weight: "Bolder", size: "Medium", wrap: true, color: "Attention"}],
+                  actions: [{type: "Action.OpenUrl", title: "PR öffnen", url: $url}]
+                }
+              }]
+            }' > card.json
+
+          curl --fail-with-body -sS -X POST \
+            -H 'Content-Type: application/json' \
+            --data @card.json \
+            "$WEBHOOK_URL"
