@@ -39,7 +39,7 @@ class RenovateConfigTest {
         List<String> filePatterns = customManagers().stream()
                 .map(manager -> manager.get("managerFilePatterns").get(0).asText())
                 .toList();
-        assertThat(filePatterns).as("expected 2 customManagers in renovate.json5").hasSize(2);
+        assertThat(filePatterns).as("expected 1 customManager in renovate.json5").hasSize(1);
 
         // act / assert
         for (String filePattern : filePatterns) {
@@ -56,7 +56,7 @@ class RenovateConfigTest {
         List<String> matchStrings = customManagers().stream()
                 .map(manager -> manager.get("matchStrings").get(0).asText())
                 .toList();
-        assertThat(matchStrings).as("expected 2 customManagers in renovate.json5").hasSize(2);
+        assertThat(matchStrings).as("expected 1 customManager in renovate.json5").hasSize(1);
         String versionsJson = Files.readString(VERSIONS_JSON);
 
         // act / assert

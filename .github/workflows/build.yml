@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        track: ["2.x", "3.x"]
+        track: ["3.x"]
 
     env:
       IMAGE: ghcr.io/wps/geoserver

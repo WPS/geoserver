@@ -17,8 +17,8 @@ Tags wie `eclipse-temurin:21-jre-alpine`, deren Digest sich ohne Tag-Wechsel än
 | Kriterium | Details
 
 | Digest-Tracking | Base-Image-Digests müssen auch bei gleichbleibendem Tag aktualisiert werden.
-| GeoServer-Version-Tracking | Neue Releases (2.x- und 3.x-Linie parallel) müssen automatisch als
-PR vorgeschlagen werden, ohne die Linien zu vermischen.
+| GeoServer-Version-Tracking | Neue Releases der 3.x-Linie müssen automatisch als PR vorgeschlagen
+werden.
 |===
 
 *Alternativen*:
@@ -38,8 +38,7 @@ weil:
 1. Renovate aktualisiert Docker-Digests bei jedem Lauf neu, unabhängig vom Tag — dokumentiertes
    Verhalten, behebt das Ausgangsproblem direkt.
 2. Ein Custom Regex Manager (`renovate.json5`) trackt die GeoServer-Version gegen die echten
-   GitHub-Releases von `geoserver/geoserver`, mit je einem unabhängigen Eintrag für die 2.x- und
-   3.x-Linie.
+   GitHub-Releases von `geoserver/geoserver`, beschränkt auf die 3.x-Linie.
 3. Dependabot Security Updates (CVE-getriggerte PRs) laufen unabhängig von `dependabot.yml` weiter
    und sind von dieser Entscheidung nicht betroffen.
 

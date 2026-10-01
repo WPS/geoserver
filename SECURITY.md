@@ -5,7 +5,6 @@
 | Tag | Supported |
 |---|---|
 | `:3.0.1` / `:latest` | ✅ Active |
-| `:2.28.5` | ✅ Active |
 
 Older tags are not actively maintained. Please upgrade to a supported version before reporting
 a vulnerability.
