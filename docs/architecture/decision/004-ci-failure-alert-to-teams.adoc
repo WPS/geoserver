@@ -1,0 +1,64 @@
+== 004-ci-failure-alert-to-teams
+
+== Status
+
+✅ Akzeptiert (30.09.2026)
+
+== Kontext
+
+Das Repo läuft weitgehend autark: Renovate öffnet PRs, die bei erfolgreichen CI Checks automatisch gemergt werden.
+Es existieren keine Push-Benachrichtigungen bei fehlschlagenden PRs für Patches. Die klassischen Teams
+Incoming Webhooks sind seit Mai 2026 abgeschaltet.
+
+*Entscheidungsgrundlage*:
+
+[cols="1,2",options="header"]
+|===
+| Kriterium | Details
+
+| Analysierbarkeit | Fehlschläge werden gemeldet, ohne dass jemand ins Repo schaut, und nur Fehlschläge, nicht jeder Run.
+| Sicherheit | Es entsteht keine zusätzliche Supply-Chain-Abhängigkeit für einen einzelnen HTTP-Request.
+| Wartbarkeit | Der Aufwand bleibt gering: kein Maschinenaccount, keine Admin-Freigabe.
+|===
+
+*Optionen*:
+
+1. *GitHub-App in Teams*
+* Vorteil: Kein Repo-Code nötig.
+* Nachteil: Braucht eine Teams-Admin-Freigabe und meldet jeden Workflow-Run, ein Filter auf
+  Fehlschläge existiert nicht.
+2. *Marketplace-Action*
+* Vorteil: Fertige Lösung.
+* Nachteil: Zusätzliche Supply-Chain-Abhängigkeit für einen einzelnen HTTP-Request.
+3. *Teams-Channel-E-Mail-Adresse*
+* Vorteil: Meldungen landen im gemeinsamen Kanal, ohne Repo-Code.
+* Nachteil: Braucht einen eigenen GitHub-Maschinenaccount samt Seat.
+4. *GitHub-Bordmittel (E-Mail bei fehlgeschlagenen Workflows)*
+* Vorteil: Kein Einrichtungsaufwand.
+* Nachteil: Deckt nur selbst ausgelöste Runs pro Person ab, kein gemeinsamer Kanal.
+5. *Eigener Workflow, der per `workflow_run` an einen Power-Automate-Flow in Teams postet*
+* Vorteil: Power Automate ist der Nachfolger der Incoming Webhooks. `curl` + `jq` genügen, keine
+  zusätzliche Abhängigkeit.
+* Nachteil: Der Workflow ist eigener Code, der gepflegt werden muss.
+
+== Entscheidung
+
+Wir wählen Option 5: Ein Workflow reagiert auf Fehlschläge der Workflows auf `renovate/**` und
+postet eine Karte an Teams, weil:
+
+1. Anders als bei Marketplace-Action und GitHub-App entsteht keine zusätzliche Abhängigkeit, und
+   es wird nur bei Fehlschlägen gemeldet.
+2. Anders als Channel-Mail und Bordmittel braucht er weder Maschinenaccount noch
+   Einzelkonfiguration pro Person.
+3. Wiederholte Fehlschläge desselben Branches lösen nur eine Meldung aus.
+
+== Risiken
+
+1. *Fehlschläge auf `main` bleiben unbeobachtet*: Push, Trivy-Scan und SBOM laufen nur dort und
+   nie in einem PR. Bewusst akzeptiert.
+2. *Stiller Ausfall der Teams-Kette*: Stirbt der Flow, wird nur der Actions-Job rot. Abmilderung:
+   Co-Owner am Flow, idealerweise ein Teamkonto.
+3. *Pflege der überwachten Workflows*: GitHub verlangt die explizite Liste unter `workflows:`.
+   Bei einer Umbenennung muss sie nachgezogen werden, sonst bricht der Alarm still.
+4. *Flow-URL ist ein Credential*: Sie liegt ausschließlich im Repo-Secret
+   `TEAMS_ALERT_CHANNEL_WEBHOOK_URL`.
