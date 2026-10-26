@@ -17,7 +17,7 @@ Tags wie `eclipse-temurin:21-jre-alpine`, deren Digest sich ohne Tag-Wechsel än
 | Kriterium | Details
 
 | Sicherheit | Base-Image-Digests müssen auch bei gleichbleibendem Tag aktualisiert werden.
-| Modifizierbarkeit | Neue GeoServer-Releases (2.x- und 3.x-Linie parallel) müssen automatisch als PR vorgeschlagen werden, ohne die Linien zu vermischen.
+| Modifizierbarkeit | Neue GeoServer-Releases beeinflussen keine alten Versionen.
 | Testbarkeit | Update-PRs müssen die CI-Checks auslösen, damit sie nicht ungetestet mergebar sind.
 |===
 

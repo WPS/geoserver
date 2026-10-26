@@ -1,0 +1,48 @@
+== 005-drop-geoserver-2-support
+
+== Status
+
+✅ Akzeptiert (01.10.2026)
+
+== Kontext
+
+Das Image wurde zunächst für zwei GeoServer-Linien ausgelegt (2.x und 3.x). Jede Linie verursacht
+eigene Builds, Scans und Update-Pflege. Im org-weiten Einsatz sind keine Legacy-Clients bekannt,
+die auf GeoServer 2.x angewiesen sind.
+
+*Entscheidungsgrundlage*:
+
+[cols="1,2",options="header"]
+|===
+| Kriterium | Details
+
+| Wartbarkeit | Der Pflegeaufwand für Builds, Scans und Versions-Updates soll gering bleiben.
+| Kompatibilität | Alle bekannten Konsumenten im org-weiten Einsatz können das Image nutzen.
+|===
+
+*Optionen*:
+
+1. *2.x und 3.x parallel pflegen*
+* Vorteil: Konsumenten können zwischen beiden Linien wählen.
+* Nachteil: Doppelter Aufwand für eine Linie, für die kein Bedarf bekannt ist.
+2. *Nur 3.x pflegen*
+* Vorteil: Eine Linie, kleinere Build-Matrix, weniger Scans und weniger Update-Konfiguration.
+* Nachteil: Kein Image für 2.x.
+3. *2.x einfrieren und nur noch Security-Patches einspielen*
+* Vorteil: Ein Rückfallweg für 2.x bleibt bestehen.
+* Nachteil: Die Pflege der Linie bleibt, obwohl kein Bedarf bekannt ist.
+
+== Entscheidung
+
+Wir wählen Option 2: Wir pflegen ausschließlich die GeoServer-3.x-Linie, weil:
+
+1. Anders als bei paralleler Pflege oder eingefrorener 2.x-Linie entsteht kein Aufwand für eine
+   Linie ohne bekannte Nutzer.
+2. Eine Linie vereinfacht Build-Matrix, Scans und Versions-Tracking.
+3. Es sind keine Legacy-Clients im org-weiten Einsatz bekannt, daher ist kein Konsument
+   ausgeschlossen.
+
+== Risiken
+
+1. *Legacy-Bedarf taucht später auf*: Ein Konsument, der doch auf 2.x angewiesen ist, bekommt kein
+   Image mit aktuellen Patches. Die Linie müsste neu aufgebaut werden.
