@@ -3,11 +3,16 @@
   "extends": ["config:recommended"],
   "labels": ["dependencies"],
 
-  // major updates should be reviewed, so major ones are labeled to prevent auto-merge
+  // Renovate merges itself: merges done with the workflow GITHUB_TOKEN don't trigger the push build on main
+  "automerge": true,
+  "automergeStrategy": "squash",
+
+  // major updates should be reviewed, so major ones are labeled and not auto-merged
   "packageRules": [
     {
       "matchUpdateTypes": ["major"],
       "addLabels": ["major-update"],
+      "automerge": false,
     },
   ],
 

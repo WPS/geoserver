@@ -1,0 +1,48 @@
+== 006-replace-auto-merge-workflow-with-renovate-automerge
+
+== Status
+
+✅ Akzeptiert (04.11.2026)
+
+== Kontext
+
+Renovate-PRs werden bisher von einem eigenen Workflow mit dem `GITHUB_TOKEN` auf Auto-Merge gesetzt.
+Der Merge läuft damit unter `github-actions`, und Pushes mit diesem Token lösen keine Folge-Workflows
+aus. Seit 30.09.2026 lief deshalb kein Publish auf `main`, GeoServer 3.0.2 wurde nie publiziert.
+
+*Entscheidungsgrundlage*:
+
+[cols="1,2",options="header"]
+|===
+| Kriterium | Details
+
+| Sicherheit | Jeder Merge auf `main` publiziert ein aktuelles, gescanntes Image.
+| Testbarkeit | Gemergt wird nur mit grünem `build (3.x)`, Major-Updates nur manuell.
+| Wartbarkeit | Kein zusätzliches Secret und keine eigene App.
+|===
+
+*Optionen*:
+
+1. *Workflow mit eigenem GitHub-App-Token oder PAT*
+* Vorteil: Bestehender Workflow bleibt.
+* Nachteil: Zusätzliches Credential, das gepflegt und rotiert werden muss.
+2. *Renovate-natives Auto-Merge*
+* Vorteil: Die Renovate-App merged selbst, ihre Pushes lösen Workflows aus. Kein eigener Code.
+* Nachteil: Wie in ADR 002 teils org-weit im Mend-Portal überlagerbar.
+
+== Entscheidung
+
+Wir wählen Option 2: Renovate merged per `automerge` selbst, Major-Updates sind ausgenommen, weil:
+
+1. Merges wieder den Build und damit das Publish auf `main` auslösen.
+2. Kein Credential und kein eigener Workflow nötig sind.
+
+Der Workflow bleibt nur für Dependabot-Security-PRs.
+
+== Risiken
+
+1. *Dependabot-Merges publizieren nicht*: Sie laufen weiter über den `GITHUB_TOKEN`. Nach einem
+   Security-Merge läuft kein Publish. Bewusst akzeptiert: Der nächste Renovate-Merge baut und
+   publiziert den Stand von `main` inklusive dieses Security-Fixes mit.
+2. *Org-weite Mend-Einstellungen*: Können Auto-Merge später verhindern. Fällt durch offen bleibende
+   PRs auf.
